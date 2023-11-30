@@ -1,6 +1,7 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 const xlsx = require("xlsx");
+const puppeteer = require("puppeteer");
 
 // Function to extract website URLs from a given webpage
 async function extractWebsiteUrls(baseUrl) {
@@ -24,8 +25,12 @@ async function extractWebsiteUrls(baseUrl) {
 
 // Function to extract contact email from a website
 async function extractEmail(url) {
+	const contactPageVariations = [
+		"contact",
+		"contact-us" /* add more variations as needed */,
+	];
+
 	try {
-		console.log("************************             " + url);
 		const response = await axios.get(url);
 		const $ = cheerio.load(response.data);
 
@@ -40,24 +45,30 @@ async function extractEmail(url) {
 		const uniqueEmailAddresses = Array.from(new Set(emailAddresses));
 
 		if (uniqueEmailAddresses.length === 0) {
-			// If no email found, try going to the "/contact/" subpage
-			const contactPageUrl = url + `contact/`;
-			console.log(contactPageUrl);
-			const contactResponse = await axios.get(contactPageUrl);
-			const $ = cheerio.load(contactResponse.data);
+			// If no email found, try variations of "/contact" subpages
+			for (const contactVariation of contactPageVariations) {
+				const contactPageUrl = url + contactVariation; // Use string concatenation
 
-			const contactEmailAddresses = $('a[href^="mailto:"]')
-				.map((index, element) => {
-					return $(element).attr("href").replace("mailto:", "");
-				})
-				.get();
-			console.log("contact page find:            " + contactEmailAddresses);
-			// Remove duplicates from the contact page emails
-			const uniqueContactEmailAddresses = Array.from(
-				new Set(contactEmailAddresses)
-			);
+				const contactResponse = await axios.get(contactPageUrl);
+				const contactContent = contactResponse.data;
 
-			return uniqueContactEmailAddresses;
+				const contact$ = cheerio.load(contactContent);
+
+				const contactEmailAddresses = contact$('a[href^="mailto:"]')
+					.map((index, element) => {
+						return contact$(element).attr("href").replace("mailto:", "");
+					})
+					.get();
+
+				// Remove duplicates from the contact page emails
+				const uniqueContactEmailAddresses = Array.from(
+					new Set(contactEmailAddresses)
+				);
+
+				if (uniqueContactEmailAddresses.length > 0) {
+					return uniqueContactEmailAddresses;
+				}
+			}
 		}
 
 		return uniqueEmailAddresses;
