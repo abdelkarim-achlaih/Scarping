@@ -2,6 +2,7 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const xlsx = require("xlsx");
 const puppeteer = require("puppeteer");
+const fs = require("fs");
 
 // Function to extract website URLs from a given webpage
 async function extractWebsiteUrls(baseUrl) {
@@ -26,31 +27,43 @@ async function extractWebsiteUrls(baseUrl) {
 // Function to extract contact email from a website
 async function extractEmail(url) {
 	const contactPageVariations = [
-		"contact",
-		"contact-us" /* add more variations as needed */,
+		/* add more variations as needed */ "/contact",
+		"/contact-us",
+		"/contactus",
 	];
 
 	try {
 		const response = await axios.get(url);
 		const $ = cheerio.load(response.data);
 
-		// Extract email addresses from the content (modify as needed)
 		const emailAddresses = $('a[href^="mailto:"]')
 			.map((index, element) => {
 				return $(element).attr("href").replace("mailto:", "");
 			})
 			.get();
 
-		// Remove duplicates
 		const uniqueEmailAddresses = Array.from(new Set(emailAddresses));
 
 		if (uniqueEmailAddresses.length === 0) {
-			// If no email found, try variations of "/contact" subpages
-			for (const contactVariation of contactPageVariations) {
-				const contactPageUrl = url + contactVariation; // Use string concatenation
+			// If no email found, try variations of contact pages using Puppeteer
+			const browser = await puppeteer.launch({
+				headless: "new",
+				args: [
+					"--no-sandbox",
+					"--disable-setuid-sandbox",
+					"--disable-dev-shm-usage",
+					"--disable-accelerated-2d-canvas",
+					"--disable-gpu",
+					"--disable-devtools-extension",
+					"--disable-web-security",
+				],
+			});
+			const page = await browser.newPage();
 
-				const contactResponse = await axios.get(contactPageUrl);
-				const contactContent = contactResponse.data;
+			for (const contactVariation of contactPageVariations) {
+				const contactPageUrl = url + contactVariation;
+				await page.goto(contactPageUrl, { waitUntil: "domcontentloaded" });
+				const contactContent = await page.content();
 
 				const contact$ = cheerio.load(contactContent);
 
@@ -60,15 +73,17 @@ async function extractEmail(url) {
 					})
 					.get();
 
-				// Remove duplicates from the contact page emails
 				const uniqueContactEmailAddresses = Array.from(
 					new Set(contactEmailAddresses)
 				);
 
 				if (uniqueContactEmailAddresses.length > 0) {
+					await browser.close();
 					return uniqueContactEmailAddresses;
 				}
 			}
+
+			await browser.close();
 		}
 
 		return uniqueEmailAddresses;
@@ -76,6 +91,26 @@ async function extractEmail(url) {
 		console.error(`Error extracting email from ${url}:`, error.message);
 		return [];
 	}
+}
+
+async function displayMediaAgenciesAndEmails(baseUrl, excelFileName) {
+	// Extract and display website URLs
+	const websiteUrls = await extractWebsiteUrls(baseUrl);
+	// console.log("Website URLs:", websiteUrls);
+
+	// Extract and display emails from each website URL
+	const data = [];
+	for (const url of websiteUrls) {
+		const emails = await extractEmail(url);
+		const agencyName = url.split(".")[1]; // Extract agency name from the URL (for demonstration purposes)
+
+		// Push data to the array
+		data.push({ agencyName, url, emails: emails.join(", ") });
+		// console.log(`${agencyName}: ${emails.join(", ")}`);
+	}
+
+	// Export data to an Excel file
+	await exportToExcel(data, excelFileName);
 }
 
 // Function to export data to an Excel file
@@ -107,24 +142,3 @@ const baseUrl =
 const excelFileName = "output.xlsx";
 
 displayMediaAgenciesAndEmails(baseUrl, excelFileName);
-
-// Function to display data on the console and export to an Excel file
-async function displayMediaAgenciesAndEmails(baseUrl, excelFileName) {
-	// Extract and display website URLs
-	const websiteUrls = await extractWebsiteUrls(baseUrl);
-	// console.log("Website URLs:", websiteUrls);
-
-	// Extract and display emails from each website URL
-	const data = [];
-	for (const url of websiteUrls) {
-		const emails = await extractEmail(url);
-		if (emails.length > 0) {
-			const agencyName = url.split(".")[1]; // Extract agency name from the URL (for demonstration purposes)
-			data.push({ agencyName, emails: emails.join(", ") }); // Combine emails into a single string
-			// console.log(`${agencyName}: ${emails.join(", ")}`);
-		}
-	}
-
-	// Export data to an Excel file
-	await exportToExcel(data, excelFileName);
-}
