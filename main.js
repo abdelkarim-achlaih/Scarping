@@ -3,12 +3,11 @@ const cheerio = require("cheerio");
 const xlsx = require("xlsx");
 const puppeteer = require("puppeteer");
 
-// Example usage
 const baseUrl =
-	"https://www.google.com/localservices/prolist?g2lbs=ANTchaO9bplSST1oDj2TNxdveYvPKk3czDpsN1oeg3ciJjEbP4YM67F54Ysxg8m9u4mb9Ir2y9tTMWKw3t6RO7QYxn0un9ogyFKpsmKwS1l46mrM_IYW2G4TOnqdZrjedTY3jcmFETa-Ukdf9UvWYPoK9EoxhsqGQg%3D%3D&hl=en-MA&gl=ma&cs=1&ssta=1&q=media%20agencies%20in%20dubai&oq=media%20agencies%20in%20dubai&slp=MgA6HENoTUk1WmlNaktyc2dnTVYySjlvQ1IySHJRTWJSAggCYACSAa8CCgsvZy8xdGZweTl6ZgoNL2cvMTFmZ2tueHYwYgoML2cvMTFoMXIzcXcyCg0vZy8xMWoxZmRrNjlyCg0vZy8xMWhfd3kyNjI1Cg0vZy8xMWYxMjcwNXF5Cg0vZy8xMWJ0X253Z2hfCg0vZy8xMWI2aF9kdnM1CgsvZy8xdGo2czliZgoML2cvMXB0eXFuczZ2CgsvZy8xdGZtbHc0NwoNL2cvMTFqN2tjNjF0MAoNL2cvMTFma2pkNHh3NgoML2cvMWhjYmgzaDE3Cg0vZy8xMWh6d2QxeHBxCg0vZy8xMWcxOXY1c3Y1Cg0vZy8xMWZfZDA0ZjJuCg0vZy8xMWtjeDk2bXZ6Cg0vZy8xMWwzY2QwMDZnCg0vZy8xMWNteXlkc3luEgQSAggBEgQKAggBmgEGCgIXGRAA&src=2&serdesk=1&sa=X&ved=2ahUKEwiKwoaMquyCAxXVfKQEHS_ABWcQjGp6BAgnEAE&scp=ChdnY2lkOmFkdmVydGlzaW5nX2FnZW5jeRJeEhIJRcbZaklDXz4RYlEphFBu5r0aEglFxtlqSUNfPhHpKQArv9DOdCIcRHViYWkgLSBVbml0ZWQgQXJhYiBFbWlyYXRlcyoUDXovxw4VX563IB3HaB0PJSB5HiEwABoObWVkaWEgYWdlbmNpZXMiF21lZGlhIGFnZW5jaWVzIGluIGR1YmFpKhJBZHZlcnRpc2luZyBhZ2VuY3k%3D"; // Replace with your desired URL
-const excelFileName = "output.xlsx";
-const city = "Dubai"; // Replace with the desired city
-const country = "United Arab Emirates"; // Replace with the desired country
+	"https://www.google.com/localservices/prolist?g2lbs=ANTchaPtBEXZ7WnPTZ8gsHQcATFlmemjy79oQOjpXd3WWPDdpIoYFKR_yWAr5ZiZpmX8SQgybbPnkstGcZFEiuxOT6wB9l6_W1mHyyHoJ6X6pVry7JogBy2CtlS2z3QIPSxkieoIR-YU6KBGf_qzmADdHjQKlaaSnA%3D%3D&hl=en-MA&gl=ma&cs=1&ssta=1&q=media%20agencies%20in%20new%20york&oq=media%20agencies%20in%20new%20york&slp=MgA6HENoTUktNVNBczRmdGdnTVZWSWRvQ1IxWVJndWFSAggCYACSAaYCCg0vZy8xMWp0eGZ4M3gyCgsvZy8xdGRjc2Z4cgoNL2cvMTFnbjF4NV9nNAoNL2cvMTFoNXZ6NzhteQoNL2cvMTFiY2NtYmJyawoNL2cvMTFmMjR2ZzNnaAoNL2cvMTFoZjNsZnpuYwoLL2cvMXRkaGZ4enQKCy9nLzF0ZHZfdDNmCgsvZy8xeGIyZmhicwoML2cvMWhjMngxcTN6Cg0vZy8xMWNsdjZyaDBoCgsvZy8xdGwxcGMxNgoLL2cvMXRkanMxZGMKCy9nLzF0bjA2cWQ5Cg0vZy8xMWpjbGZqcHd5CgwvZy8xaGMzNG00M3QKCy9nLzF0dGR6YzdwCg0vZy8xMWo0eTBjNDY3Cg0vZy8xMWpteXJrazV5EgQSAggBEgQKAggBmgEGCgIXGRAA&src=2&serdesk=1&sa=X&ved=2ahUKEwjoiPuyh-2CAxWVRaQEHfQFBeYQjGp6BAgqEAE&scp=ChdnY2lkOmFkdmVydGlzaW5nX2FnZW5jeRJTEhIJOwg_06VPwokRYv534QaPC8gaEgmppSPx8EvMTBFnlRjewcbP3SIRTmV3IFlvcmssIE5ZLCBVU0EqFA1nXCAYFU32vNMd24ZjGCUfOxLUMAAaDm1lZGlhIGFnZW5jaWVzIhptZWRpYSBhZ2VuY2llcyBpbiBuZXcgeW9yayoSQWR2ZXJ0aXNpbmcgYWdlbmN5"; // Replace with your desired URL
+const excelFileName = "newyork.xlsx";
+const city = "newyork"; // Replace with the desired city
+const country = "USA"; // Replace with the desired country
 
 displayMediaAgenciesAndEmails(baseUrl, excelFileName, city, country);
 
@@ -100,14 +99,15 @@ async function extractEmail(url) {
 		return [];
 	}
 }
+
 // Function to extract agency name from the URL
 function extractAgencyName(url) {
-	// Remove "www." if it exists, then split by dots
-	const urlWithoutWWW = url.replace("www.", "");
-	const urlParts = urlWithoutWWW.split(".");
+	// Remove protocol and split by dots
+	const urlWithoutProtocol = url.replace(/^(https?:\/\/)?(www\.)?/, "");
+	const urlParts = urlWithoutProtocol.split(".");
 
-	// Assuming the agency name is the second part of the URL
-	return urlParts.length >= 2 ? urlParts[1] : "Unknown";
+	// Assuming the agency name is the first part of the remaining URL
+	return urlParts.length >= 1 ? urlParts[0] : "Unknown";
 }
 
 async function displayMediaAgenciesAndEmails(
