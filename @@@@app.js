@@ -1,21 +1,23 @@
-const axios = require("axios");
-const cheerio = require("cheerio");
 const xlsx = require("xlsx");
 const puppeteer = require("puppeteer");
+const path = require("path");
 
 const baseUrl =
-	"https://www.google.com/localservices/prolist?g2lbs=ANTchaPrk5myN8pUUqC_x64KLAku-4LauCELG71VmuzKYO1o7lt3erKXL_LeXMXVO8NZRF1jv2XIHcOjQeK_DCT_4hbZeJKwvcUHsueJfwi0HOxI8uLk_9W675FjqvzvCSnmXiIxTI-P&hl=en-MA&gl=ma&cs=1&ssta=1&q=geneva%20media%20agencies&oq=geneva%20media%20agencies&slp=MgA6HENoTUlvc0NyaTV6NmdnTVZrUVVHQUIzWWF3RFlSAggCYACSAacCCgsvZy8xdGR3MmNmMAoNL2cvMTFoMThuOTBxcgoNL2cvMTFjNDVyMms2bQoML2cvMTJoa250YjdzCg0vZy8xMXE0Y2hwcV9mCgsvZy8xd2Jmejk2YwoNL2cvMTFidG0xMDJxNgoNL2cvMTFoODRyNzg4OAoNL2cvMTFnbXl5MW1rMQoLL2cvMXZfdzE4MnQKDS9nLzExZzZ4OGh0MjQKCy9nLzF0dnEzMDkyCgsvZy8xdnlzdmZjdgoML2cvMTFnXzJwYjRwCg0vZy8xMWI3cm44czgwCgwvZy8xcHR3czBnOTQKDS9nLzExZmoxN3ZuNXYKDS9nLzExZHhmYms5c3QKCy9nLzF0ZjZsMnM0CgsvZy8xdGQyeWM5MxIEEgIIARIECgIIAZoBBgoCFxkQAA%3D%3D&src=2&serdesk=1&sa=X&ved=2ahUKEwjplaaLnPqCAxU5Q6QEHWC0Be0QjGp6BAhWEAE&scp=ChdnY2lkOmFkdmVydGlzaW5nX2FnZW5jeRJVEhIJ6-LQkwZljEcRObwLezWVtqAaEglNSU9cQ2SMRxERgCELFhXfNiITR2VuZXZhLCBTd2l0emVybGFuZCoUDU0rhhsV9FikAx0LbY4bJfVbrgMwABoObWVkaWEgYWdlbmNpZXMiFWdlbmV2YSBtZWRpYSBhZ2VuY2llcyoSQWR2ZXJ0aXNpbmcgYWdlbmN5"; // Replace with your desired URL
-const excelFileName = "newyork.xlsx";
-const city = "newyork"; // Replace with the desired city
-const country = "USA"; // Replace with the desired country
+	"https://www.google.com/localservices/prolist?g2lbs=ANTchaMDAMMNJYCa2G72BVpbYV_Zih1NxT8ROoLA6WQaFfuTbAUEkKAOubUGCr4dVW-Hse7CtfwHO7semNLEdBhgGKk3G0WTKquGgpeHotXI3BtRp0G1zE6W6a6OmqtCLNLGlaYHrGth&hl=en-MA&gl=ma&cs=1&ssta=1&q=manchester%20media%20agencies&oq=manchester%20media%20agencies&slp=MgA6HENoTUlndTNENjdQNmdnTVZQRDRHQUIzTVNBemZSAggCYACSAasCCg0vZy8xMWZnNjBkXzczCg0vZy8xMWowdzlnMjh3CgwvZy8xaGRfdjVyNzkKDS9nLzExaDhqenhzbGgKDS9nLzExY20weDJjdGsKDS9nLzExYzVidDBqanIKDS9nLzExYndfNTZxajAKDS9nLzExZHliZmhyX20KDS9nLzExYzZ5ejl6bngKDS9nLzExZmt3bjcwazAKCy9nLzF0cXQ5Nms2CgwvZy8xcHR4c3lfd3AKDS9nLzExYmNjZDBjMjgKCy9nLzF0ZjNiMXZ5CgsvZy8xdGRxNWs3ZAoNL2cvMTFjNnlfenN4MwoLL2cvMXRkMTdkNTgKCy9nLzF0ZmdueXp2CgwvZy8xMmhxbGZsbXIKDS9nLzExYnp4MHhqa2YSBBICCAESBAoCCAGaAQYKAhcZEAA%3D&src=2&serdesk=1&sa=X&ved=2ahUKEwjO-r3rs_qCAxW7UKQEHYSmAjoQjGp6BAgdEAE&scp=ChVnY2lkOm1hcmtldGluZ19hZ2VuY3kSUBISCdv1JlJMTXpIEapr_gQ4FL7ZGhIJoceAoT2ye0gREDRt7Z75DAQiDk1hbmNoZXN0ZXIsIFVLKhQNti3UHxV3CKH-HXdB6h8lgGu4_jAAGg5tZWRpYSBhZ2VuY2llcyIZbWFuY2hlc3RlciBtZWRpYSBhZ2VuY2llcyoQTWFya2V0aW5nIGFnZW5jeQ%3D%3D"; // Replace with your desired URL
+const city = "Manchester"; // Replace with the desired city
+const country = "UK"; // Replace with the desired country
+const excelFileName = `${city}.xlsx`;
+const deep = 15; // Max Number of Google Local Services Pages Fetched
 
 displayMediaAgenciesAndEmails(baseUrl, excelFileName, city, country);
 
 let stars = (num) => ` ${"*".repeat(num)} `;
+
 // Function to extract website URLs from a given webpage
+
 async function extractWebsiteUrls(baseUrl) {
 	let lastScrapedPage;
-	return await scrapePages(baseUrl, 20);
+	return await scrapePages(baseUrl, deep);
 
 	async function scrapePages(baseUrl, maxPages = 3) {
 		const browser = await puppeteer.launch({ headless: "new" });
@@ -136,68 +138,78 @@ async function extractWebsiteUrls(baseUrl) {
 	}
 }
 
-// Function to extract contact email from a website
-async function extractEmail(url) {
+async function extractEmail(url, urlIndex) {
 	const contactPageVariations = [
-		/* add more variations as needed */ "/contact",
+		"/contact",
 		"/contact-us",
 		"/contactus",
+		"/get-in-touch",
+		"/about-us/contact",
+		"/about/contact",
+		"/aboutus/contact",
+		"/info/contact",
+		"/support",
+		"/support/contact",
+		"/help",
+		"/help/contact",
+		"/customer-service",
+		"/customer-service/contact",
+		/* add more variations as needed */
 	];
 
 	try {
-		const response = await axios.get(url);
-		const $ = cheerio.load(response.data);
+		const browser = await puppeteer.launch({
+			headless: "new",
+			args: [
+				"--no-sandbox",
+				"--disable-setuid-sandbox",
+				"--disable-dev-shm-usage",
+				"--disable-accelerated-2d-canvas",
+				"--disable-gpu",
+				"--disable-devtools-extension",
+				"--disable-web-security",
+			],
+		});
+		const page = await browser.newPage();
 
-		const emailAddresses = $('a[href^="mailto:"]')
-			.map((index, element) => {
-				return $(element).attr("href").replace("mailto:", "");
-			})
-			.get();
+		console.log(
+			stars(2),
+			`Start Extracting Emails From URL N: ${urlIndex} of ${websiteUrls.length}`,
+			stars(2)
+		);
 
+		await page.goto(url, { waitUntil: "domcontentloaded" });
+
+		const getEmailAddresses = async () => {
+			return await page.$$eval('a[href^="mailto:"]', (links) =>
+				links.map((link) => link.getAttribute("href").replace("mailto:", ""))
+			);
+		};
+
+		const emailAddresses = await getEmailAddresses();
 		const uniqueEmailAddresses = Array.from(new Set(emailAddresses));
 
 		if (uniqueEmailAddresses.length === 0) {
 			// If no email found, try variations of contact pages using Puppeteer
-			const browser = await puppeteer.launch({
-				headless: "new",
-				args: [
-					"--no-sandbox",
-					"--disable-setuid-sandbox",
-					"--disable-dev-shm-usage",
-					"--disable-accelerated-2d-canvas",
-					"--disable-gpu",
-					"--disable-devtools-extension",
-					"--disable-web-security",
-				],
-			});
-			const page = await browser.newPage();
-
 			for (const contactVariation of contactPageVariations) {
 				const contactPageUrl = url + contactVariation;
 				await page.goto(contactPageUrl, { waitUntil: "domcontentloaded" });
-				const contactContent = await page.content();
 
-				const contact$ = cheerio.load(contactContent);
-
-				const contactEmailAddresses = contact$('a[href^="mailto:"]')
-					.map((index, element) => {
-						return contact$(element).attr("href").replace("mailto:", "");
-					})
-					.get();
-
+				const contactEmailAddresses = await getEmailAddresses();
 				const uniqueContactEmailAddresses = Array.from(
 					new Set(contactEmailAddresses)
 				);
 
 				if (uniqueContactEmailAddresses.length > 0) {
+					console.log("Contact Returning the first email found");
+					console.log(uniqueContactEmailAddresses);
 					await browser.close();
-					return uniqueContactEmailAddresses;
+					return uniqueContactEmailAddresses; // Return the first email found
 				}
 			}
-
-			await browser.close();
 		}
 
+		await browser.close();
 		return uniqueEmailAddresses;
 	} catch (error) {
 		console.error(`Error extracting email from ${url}:`, error.message);
@@ -206,6 +218,7 @@ async function extractEmail(url) {
 }
 
 // Function to extract agency name from the URL
+
 function extractAgencyName(url) {
 	// Remove protocol and split by dots
 	const urlWithoutProtocol = url.replace(/^(https?:\/\/)?(www\.)?/, "");
@@ -215,6 +228,8 @@ function extractAgencyName(url) {
 	return urlParts.length >= 1 ? urlParts[0] : "Unknown";
 }
 
+let websiteUrls;
+
 async function displayMediaAgenciesAndEmails(
 	baseUrl,
 	excelFileName,
@@ -222,40 +237,56 @@ async function displayMediaAgenciesAndEmails(
 	country
 ) {
 	// Extract and display website URLs
-	const websiteUrls = await extractWebsiteUrls(baseUrl);
+	websiteUrls = await extractWebsiteUrls(baseUrl);
 
 	// Extract and display emails from each website URL
 	const data = [];
+	console.log(
+		stars(10),
+		"Start Extracting Emails + Names: Fetching For Media Agencies Emails + Names",
+		stars(10)
+	);
 	for (const url of websiteUrls) {
-		const emails = await extractEmail(url);
+		const emails = await extractEmail(url, websiteUrls.indexOf(url));
 		const agencyName = extractAgencyName(url); // Extract agency name from the URL (for demonstration purposes)
 
 		// Push data to the array
-		data.push({ agencyName, url, city, country, emails: emails.join(", ") });
+		if (emails.length > 0) {
+			data.push({ agencyName, url, city, country, emails: emails.join(", ") });
+		}
 	}
-
+	console.log(
+		stars(5),
+		"Number Of Emails Found:",
+		data.length,
+		"Emails",
+		stars(5)
+	);
+	console.log(stars(10), "Start Exportation to Excel File", stars(10));
 	// Export data to an Excel file
 	await exportToExcel(data, excelFileName);
 }
 
 // Function to export data to an Excel file
+
 async function exportToExcel(data, excelFileName) {
 	try {
 		const headers = Object.keys(data[0]); // Assuming all objects have the same keys
 
-		// Create a worksheet with headers and data
 		const worksheet = xlsx.utils.json_to_sheet(data, { header: headers });
-
-		// Create a new workbook
 		const workbook = xlsx.utils.book_new();
-
-		// Add the worksheet to the workbook
 		xlsx.utils.book_append_sheet(workbook, worksheet, "Media Agencies");
 
-		// Write the Excel workbook to a file
-		xlsx.writeFile(workbook, excelFileName);
+		// Specify the subfolder path
+		const subfolderPath = "Results";
 
-		console.log(`Data exported to ${excelFileName}`);
+		// Join the subfolder path with the original file name
+		const fullPath = path.join(subfolderPath, excelFileName);
+
+		// Write the Excel workbook to the file in the subfolder
+		xlsx.writeFile(workbook, fullPath);
+
+		console.log(stars(5), `Data exported to ${fullPath}`, stars(5));
 	} catch (error) {
 		console.error("Error exporting data to Excel file:", error.message);
 	}
