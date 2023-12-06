@@ -3,30 +3,140 @@ const cheerio = require("cheerio");
 const xlsx = require("xlsx");
 const puppeteer = require("puppeteer");
 
-const baseUrl = "example.com"; // Replace with your desired URL
-const excelFileName = "newyork.xlsx";
-const city = "newyork"; // Replace with the desired city
-const country = "USA"; // Replace with the desired country
+// const baseUrl = ""; // Replace with your desired URL
+// const city = "newyork"; // Replace with the desired city
+// const country = "USA"; // Replace with the desired country
+// const excelFileName = "newyork.xlsx";
+const baseUrl = process.argv[2];
+const city = process.argv[3];
+const country = process.argv[4];
+console.log(city);
+const excelFileName = `${city}.xlsx`;
 
 displayMediaAgenciesAndEmails(baseUrl, excelFileName, city, country);
 
+let stars = (num) => ` ${"*".repeat(num)} `;
 // Function to extract website URLs from a given webpage
 async function extractWebsiteUrls(baseUrl) {
-	try {
-		const response = await axios.get(baseUrl);
-		const $ = cheerio.load(response.data);
+	let lastScrapedPage;
+	return await scrapePages(baseUrl, 3);
 
-		// Extract href attributes from a elements with aria-label="Website"
-		const websiteUrls = $("div[data-website-url]")
-			.map((index, element) => {
-				return $(element).attr("data-website-url");
-			})
-			.get();
+	async function scrapePages(baseUrl, maxPages = 3) {
+		const browser = await puppeteer.launch({ headless: "new" });
+		const page = await browser.newPage();
+		let allWebsiteUrls = []; // Variable to store all website URLs
+		let continueScraping = true;
+		try {
+			// Navigate to the initial URL
+			await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
 
-		return websiteUrls;
-	} catch (error) {
-		console.error("Error extracting website URLs:", error.message);
-		return [];
+			// Wait for a specific content element to be present on the page
+			await page.waitForSelector(`button[aria-label="Next"]`, {
+				timeout: 60000,
+			});
+			console.log(
+				stars(10),
+				"Start Scarping Google Local Services: Fetching For Media Agencies URLs",
+				stars(10)
+			);
+			for (
+				let pageCounter = 0;
+				pageCounter < maxPages && continueScraping;
+				pageCounter++
+			) {
+				// Get links from the current page
+				const websiteUrls = await getLinks(page);
+
+				allWebsiteUrls = allWebsiteUrls.concat(websiteUrls);
+
+				// Do something with the extracted website URLs
+				// console.log(`Page ${pageCounter + 1} - Website URLs:`, websiteUrls);
+				console.log(
+					stars(2),
+					`Scarping Page ${pageCounter + 1} of ${maxPages}`,
+					stars(2)
+				);
+				lastScrapedPage = pageCounter + 1;
+				// Navigate to the next page and update the flag based on button presence
+				continueScraping = await navigateToNextPage(page);
+			}
+
+			// Log the combined array after the loop finishes
+			let tmp = new Set(allWebsiteUrls);
+			let uniqueWebsiteUrls = Array.from(tmp);
+			// console.log("All Website URLs:", uniqueWebsiteUrls);
+			console.log(
+				stars(5),
+				"Number Of Website URLs Fetched:",
+				uniqueWebsiteUrls.length,
+				"Unique URL",
+				stars(5)
+			);
+
+			// ********** Final ******************
+
+			return uniqueWebsiteUrls;
+
+			// ********** Final ******************
+		} catch (error) {
+			console.error("Error during page navigation:", error);
+		} finally {
+			// Close the browser
+			await browser.close();
+		}
+	}
+
+	async function getLinks(page) {
+		try {
+			// Extract href attributes from a elements with aria-label="Website"
+			const websiteUrls = await page.$$eval(
+				'a[aria-label="Website"]',
+				(elements) => {
+					return elements.map((element) => element.href);
+				}
+			);
+			return websiteUrls;
+		} catch (error) {
+			console.error("Error extracting website URLs:", error.message);
+			return [];
+		}
+	}
+
+	async function navigateToNextPage(page) {
+		try {
+			// Check if the "Next" button is present
+			const nextButton = await page.$('button[aria-label="Next"]');
+			if (nextButton) {
+				// Simulate a click on the "Next" button
+				await Promise.all([
+					page.waitForNavigation({ waitUntil: "domcontentloaded" }),
+					page.click('button[aria-label="Next"]'),
+				]);
+
+				// Wait for the content to be updated
+				await page.waitForFunction(
+					() => {
+						// Replace this condition with one that suits your website's behavior
+						// Check if the new content has loaded or if a specific element is present
+						return document.querySelector("div[data-website-url]") !== null;
+					},
+					{ timeout: 60000 }
+				); // Adjust the timeout as needed
+
+				return true; // Continue scraping
+			} else {
+				console.log(
+					stars(5),
+					"End of pagination at page:",
+					lastScrapedPage,
+					stars(5)
+				);
+				return false; // Stop scraping
+			}
+		} catch (error) {
+			console.error("Error navigating to the next page:", error);
+			return false; // Stop scraping on error
+		}
 	}
 }
 
