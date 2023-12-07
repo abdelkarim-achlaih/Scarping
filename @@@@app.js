@@ -409,6 +409,8 @@ async function exportToExcel(data, fullPath) {
 	}
 }
 
+// Not completed yet
+
 // async function mergeExcelFiles() {
 // 	const resultsFolder = path.join(__dirname, "Results", country, city);
 
