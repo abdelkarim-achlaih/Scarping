@@ -3,13 +3,13 @@ const puppeteer = require("puppeteer");
 const path = require("path");
 
 const baseUrl =
-	"https://www.google.com/localservices/prolist?g2lbs=ANTchaM5A7UIxgu6bF7XsRGcSSd9GF2XmhBAhyyFuBuWaVGlujFLFHH2pHp8O14d8nrn1ixl3dYv5e3QAuSeHFqx4kyCYj4ms02OjKya_9NXsgc1OKYiDDV-g8HVPtVPJ4o8TdpvHLIq&hl=en-MA&gl=ma&cs=1&ssta=1&q=london%20media%20agencies&oq=london%20media%20agencies&slp=MgA6HENoTUk3YnVjaE9EOGdnTVZXSVZvQ1IzNmlRczNSAggCYACSAaMCCgwvZy8xcTZqY201eTUKDS9nLzExZjhoc3prdG0KCy9nLzF0cDI2azE1CgwvZy8xcHR2dmowY2IKDS9nLzExYnRtOXBfdGwKDC9nLzFoZjI2ZHlxZgoLL2cvMXRycHE4Y2cKDS9nLzExdHNkOXg5ZGIKDS9nLzExczdmdzdwM3MKCy9nLzF0ZzZrMGJmCgsvZy8xdGdfOHpreAoLL2cvMXY4MzBsamcKCy9nLzF0aGs4Nmx2CgsvZy8xdGRrbHBfYgoNL2cvMTFiel96c3QwMwoLL2cvMXRscXBnYjEKCy9nLzF0Y3hwNGtnCg0vZy8xMWI4YzNjOXYyCg0vZy8xMWI3bHBoc2x6Cg0vZy8xMWZqNnk5cXc2EgQSAggBEgQKAggBmgEGCgIXGRAA&src=2&serdesk=1&sa=X&sqi=2&ved=2ahUKEwiwhpeE4PyCAxU2RaQEHYigCXgQjGp6BAhcEAE&scp=ChVnY2lkOm1hcmtldGluZ19hZ2VuY3kSTBISCXXeIa8LoNhHEZkq1d1aOpZSGhIJb-IaoQug2EcRi-m4hONz8S8iCkxvbmRvbiwgVUsqFA05uKAeFcVeyv8d6JLMHiXWnxYAMAAaDm1lZGlhIGFnZW5jaWVzIhVsb25kb24gbWVkaWEgYWdlbmNpZXMqEE1hcmtldGluZyBhZ2VuY3k%3D"; // Replace with your desired URL
+	"https://www.google.com/localservices/prolist?g2lbs=ANTchaNWgRmZFHM78kmy_p3Q-BYNTuHj_0kt9lZnTzspoHVYbmUbqAW_8aksuMgLlTZLQz-Bu1dmolUrTXJ8Iz_lnhmmQvZjjifiXBMmgp3VpILk7nQOKCY%3D&hl=en-MA&gl=ma&cs=1&ssta=1&q=media%20agencies%20in%20london&oq=media%20agencies%20in%20london&slp=MgA6HENoTUlqX3o3NTRqOWdnTVYtNVJvQ1IyLVZBRzRSAggCYACSAakCCgwvZy8xcTZqY201eTUKDS9nLzExZjhoc3prdG0KCy9nLzF0cDI2azE1CgwvZy8xcHR2dmowY2IKDS9nLzExYnRtOXBfdGwKCy9nLzF0cnBxOGNnCg0vZy8xMXM3Znc3cDNzCg0vZy8xMXRzZDl4OWRiCgsvZy8xdGdfOHpreAoML2cvMWhmMjZkeXFmCg0vZy8xMWNzM3pscnZyCgsvZy8xdGc2azBiZgoLL2cvMXRoazg2bHYKDS9nLzExZ196NDMyYl8KDS9nLzExZmo2eTlxdzYKDS9nLzExYnpfenN0MDMKCy9nLzF0Y3hwNGtnCg0vZy8xMWI4YzNjOXYyCg0vZy8xMWRkeDZmNGptCg0vZy8xMWYxNW44bm1xEgQSAggBEgQKAggBmgEGCgIXGRAA&src=2&serdesk=1&sa=X&ved=2ahUKEwi79_XniP2CAxUNVKQEHXJlBUkQjGp6BAggEAE&scp=ChVnY2lkOm1hcmtldGluZ19hZ2VuY3kSTBISCXXeIa8LoNhHEZkq1d1aOpZSGhIJb-IaoQug2EcRi-m4hONz8S8iCkxvbmRvbiwgVUsqFA05uKAeFcVeyv8d6JLMHiXWnxYAMAAaDm1lZGlhIGFnZW5jaWVzIhhtZWRpYSBhZ2VuY2llcyBpbiBsb25kb24qEE1hcmtldGluZyBhZ2VuY3k%3D"; // Replace with your desired URL
 const city = "London"; // Replace with the desired city
 const country = "UK"; // Replace with the desired country
-const excelFileName = `${city}.xlsx`;
 const deep = 10; // Max Number of Google Local Services Pages Fetched
+const agenciesPerPage = 40; // Max Number of Agencies per excel file
 
-displayMediaAgenciesAndEmails(baseUrl, excelFileName, city, country);
+displayMediaAgenciesAndEmails(baseUrl, city, country);
 
 let stars = (num) => ` ${"*".repeat(num)} `;
 
@@ -248,6 +248,8 @@ async function extractEmail(url, urlIndex, page) {
 			}
 
 			return uniqueEmailAddresses;
+		} else {
+			return [];
 		}
 	} catch (error) {
 		console.error(`Error extracting email from ${url}:`, error.message);
@@ -273,20 +275,18 @@ let websiteUrls;
 
 async function displayMediaAgenciesAndEmails(
 	baseUrl,
-	excelFileName,
 	city,
 	country
 ) {
 	// Extract and display website URLs
 	websiteUrls = await extractWebsiteUrls(baseUrl);
 
-	// Extract and display emails from each website URL
-	const data = [];
 	console.log(
 		stars(10),
 		"Start Extracting Emails + Names: Fetching For Media Agencies Emails + Names",
 		stars(10)
 	);
+
 	const browser = await puppeteer.launch({
 		headless: "new",
 		args: [
@@ -300,21 +300,51 @@ async function displayMediaAgenciesAndEmails(
 			"--blink-settings=imagesEnabled=false",
 		],
 	});
+
 	const page = await browser.newPage();
+
+	const foundAgencies = [];
+	const exportedFiles = 0;
 	for (const url of websiteUrls) {
 		const emails = await extractEmail(url, websiteUrls.indexOf(url), page);
 
 		// Push data to the array
 		if (emails.length > 0) {
 			const agencyName = extractAgencyName(emails[0]); // Extract agency name from the URL
-			data.push({ agencyName, url, city, country, emails: emails.join(", ") });
+			foundAgencies.push({
+				agencyName,
+				url,
+				city,
+				country,
+				emails: emails.join(", "),
+			});
+
+			// Check if the batch size is reached
+			if (foundAgencies.length >= agenciesPerPage) {
+				// Export data to an Excel file with a unique name
+				const batchNumber = exportedFiles + 1;
+				const batchExcelFileName = `${city}-${batchNumber}.xlsx`;
+				await exportToExcel(foundAgencies, batchExcelFileName);
+				console.log(
+					stars(5),
+					`Exportation to Excel File ${batchNumber}`,
+					stars(5)
+				);
+				// Reset the array for the next batch
+				foundAgencies.length = 0;
+			}
 		}
 	}
+
+	// Export any remaining agencies to Excel
+	if (foundAgencies.length > 0) {
+		const batchNumber = Math.ceil(foundAgencies.length / agenciesPerPage);
+		const batchExcelFileName = `${city}-${batchNumber}.xlsx`;
+		await exportToExcel(foundAgencies, batchExcelFileName);
+	}
+
 	await browser.close();
-	console.log(stars(5), "Number Of Agencies Found:", data.length, stars(5));
-	console.log(stars(10), "Start Exportation to Excel File", stars(10));
-	// Export data to an Excel file
-	await exportToExcel(data, excelFileName);
+	console.log(stars(10), "Exportation to Excel Files Complete", stars(10));
 }
 
 // Function to export data to an Excel file
