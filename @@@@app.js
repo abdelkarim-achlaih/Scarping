@@ -2,6 +2,7 @@ const xlsx = require("xlsx");
 const puppeteer = require("puppeteer");
 const path = require("path");
 const fs = require("fs");
+const ExcelJS = require("exceljs");
 
 const baseUrl =
 	"https://www.google.com/localservices/prolist?g2lbs=ANTchaMkeDDIPmb0MV-2tsryOGbLbawRNaR2QujjmwrCN-DC6axPANtqPug9p_MmLv0HSW_KBliuoTO2FUkpNgCfBt9r9mpELU3je8f9-w0rZQ9J7TFvbMo%3D&hl=en-MA&gl=ma&cs=1&ssta=1&q=manchester%20media%20agencies&oq=manchester%20media%20agencies&slp=MgA6HENoTUk4TUcxZ3BYOWdnTVZZSVZvQ1IyT2dndUpSAggCYACSAasCCg0vZy8xMWZnNjBkXzczCg0vZy8xMWowdzlnMjh3CgwvZy8xaGRfdjVyNzkKDS9nLzExaDhqenhzbGgKDS9nLzExY20weDJjdGsKDS9nLzExYzVidDBqanIKDS9nLzExYndfNTZxajAKDS9nLzExZHliZmhyX20KDS9nLzExYzZ5ejl6bngKDS9nLzExZmt3bjcwazAKCy9nLzF0cXQ5Nms2CgwvZy8xcHR4c3lfd3AKDS9nLzExYmNjZDBjMjgKCy9nLzF0ZjNiMXZ5CgsvZy8xdGRxNWs3ZAoNL2cvMTFiNzVkc3o4OQoNL2cvMTFjNnlfenN4MwoLL2cvMXRkMTdkNTgKCy9nLzF0ZmdueXp2CgwvZy8xMmhxbGZsbXISBBICCAESBAoCCAGaAQYKAhcZEAA%3D&src=2&serdesk=1&sa=X&ved=2ahUKEwiHyq-Clf2CAxXrUaQEHSKEBdkQjGp6BAggEAE&scp=ChVnY2lkOm1hcmtldGluZ19hZ2VuY3kSUBISCdv1JlJMTXpIEapr_gQ4FL7ZGhIJoceAoT2ye0gREDRt7Z75DAQiDk1hbmNoZXN0ZXIsIFVLKhQNti3UHxV3CKH-HXdB6h8lgGu4_jAAGg5tZWRpYSBhZ2VuY2llcyIZbWFuY2hlc3RlciBtZWRpYSBhZ2VuY2llcyoQTWFya2V0aW5nIGFnZW5jeQ%3D%3D"; // Replace with your desired URL
@@ -406,3 +407,4 @@ async function exportToExcel(data, fullPath) {
 		console.error("Error exporting data to Excel file:", error.message);
 	}
 }
+
