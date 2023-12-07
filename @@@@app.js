@@ -7,7 +7,7 @@ const baseUrl =
 const city = "London"; // Replace with the desired city
 const country = "UK"; // Replace with the desired country
 const excelFileName = `${city}.xlsx`;
-const deep = 1; // Max Number of Google Local Services Pages Fetched
+const deep = 10; // Max Number of Google Local Services Pages Fetched
 
 displayMediaAgenciesAndEmails(baseUrl, excelFileName, city, country);
 
@@ -231,7 +231,7 @@ async function extractEmail(url, urlIndex, page) {
 					const contactPageUrl = url.endsWith("/")
 						? url.slice(0, -1) + contactVariation
 						: url + contactVariation;
-					console.log(contactPageUrl);
+					// console.log(contactPageUrl);
 					await page.goto(contactPageUrl, { waitUntil: "domcontentloaded" });
 
 					const contactEmailAddresses = await getEmailAddresses();
@@ -240,8 +240,8 @@ async function extractEmail(url, urlIndex, page) {
 					);
 
 					if (uniqueContactEmailAddresses.length > 0) {
-						console.log("Contact Returning the first email found");
-						console.log(uniqueContactEmailAddresses);
+						console.log(`Email returned from ${contactVariation}`);
+						// console.log(uniqueContactEmailAddresses);
 						return uniqueContactEmailAddresses; // Return the first email found
 					}
 				}
@@ -257,13 +257,16 @@ async function extractEmail(url, urlIndex, page) {
 
 // Function to extract agency name from the URL
 
-function extractAgencyName(url) {
-	// Remove protocol and split by dots
-	const urlWithoutProtocol = url.replace(/^(https?:\/\/)?(www\.)?/, "");
-	const urlParts = urlWithoutProtocol.split(".");
+function extractAgencyName(email) {
+	// Extract the agency name from the email template after the "@"
+	const agencyWithTLD = email.split("@")[1];
 
-	// Assuming the agency name is the first part of the remaining URL
-	return urlParts.length >= 1 ? urlParts[0] : "Unknown";
+	// Remove the TLD by getting the substring before the last "."
+	const agencyName = agencyWithTLD
+		? agencyWithTLD.substring(0, agencyWithTLD.lastIndexOf("."))
+		: "Unknown";
+
+	return agencyName || "Unknown";
 }
 
 let websiteUrls;
@@ -300,10 +303,10 @@ async function displayMediaAgenciesAndEmails(
 	const page = await browser.newPage();
 	for (const url of websiteUrls) {
 		const emails = await extractEmail(url, websiteUrls.indexOf(url), page);
-		const agencyName = extractAgencyName(url); // Extract agency name from the URL (for demonstration purposes)
 
 		// Push data to the array
 		if (emails.length > 0) {
+			const agencyName = extractAgencyName(emails[0]); // Extract agency name from the URL
 			data.push({ agencyName, url, city, country, emails: emails.join(", ") });
 		}
 	}
