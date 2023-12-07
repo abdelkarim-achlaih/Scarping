@@ -164,8 +164,6 @@ async function extractEmail(url, urlIndex, page) {
 			stars(2)
 		);
 
-		await page.goto(url, { waitUntil: "domcontentloaded" });
-
 		const getEmailAddresses = async () => {
 			const mailtoLinks = await page.$$eval('a[href^="mailto:"]', (links) =>
 				links.map((link) => link.getAttribute("href").replace("mailto:", ""))
@@ -175,39 +173,82 @@ async function extractEmail(url, urlIndex, page) {
 				return mailtoLinks;
 			} else {
 				// If no mailto links are found, search for email addresses in the page's inner text
-				const pageText = await page.evaluate(() => document.body.innerText);
+				const pageText = await page.evaluate(async () => {
+					await new Promise((resolve) => {
+						if (document.body) {
+							resolve();
+						} else {
+							document.addEventListener("DOMContentLoaded", () => {
+								resolve();
+							});
+						}
+					});
+
+					return document.body.innerText;
+				});
+
 				const emailRegex =
 					/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
 				return pageText.match(emailRegex) || [];
 			}
 		};
 
-		const emailAddresses = await getEmailAddresses();
-		const uniqueEmailAddresses = Array.from(new Set(emailAddresses));
+		async function navigateWithRetry(page, url, maxRetries = 5) {
+			let retries = 0;
+			let delayBeforeRetry = 1000;
 
-		if (uniqueEmailAddresses.length === 0) {
-			// If no email found, try variations of contact pages using Puppeteer
-			for (const contactVariation of contactPageVariations) {
-				const contactPageUrl = url.endsWith("/")
-					? url.slice(0, -1) + contactVariation
-					: url + contactVariation;
-				console.log(contactPageUrl);
-				await page.goto(contactPageUrl, { waitUntil: "domcontentloaded" });
-
-				const contactEmailAddresses = await getEmailAddresses();
-				const uniqueContactEmailAddresses = Array.from(
-					new Set(contactEmailAddresses)
-				);
-
-				if (uniqueContactEmailAddresses.length > 0) {
-					console.log("Contact Returning the first email found");
-					console.log(uniqueContactEmailAddresses);
-					return uniqueContactEmailAddresses; // Return the first email found
+			while (retries < maxRetries) {
+				try {
+					await page.goto(url, { waitUntil: "domcontentloaded" });
+					return true; // Break out of the loop if navigation is successful
+				} catch (error) {
+					console.error(`Error navigating to ${url}:`, error.message);
+					retries++;
+					if (retries < maxRetries) {
+						// console.log(`Retrying in ${delayBeforeRetry}ms...`);
+						await page.waitForTimeout(delayBeforeRetry);
+					}
 				}
 			}
+
+			console.error(
+				`Failed to navigate to ${url} after ${maxRetries} retries.`
+			);
+			return false;
 		}
 
-		return uniqueEmailAddresses;
+		const success = await navigateWithRetry(page, url);
+
+		if (success) {
+			// Perform other actions after successful navigation
+
+			const emailAddresses = await getEmailAddresses();
+			const uniqueEmailAddresses = Array.from(new Set(emailAddresses));
+
+			if (uniqueEmailAddresses.length === 0) {
+				// If no email found, try variations of contact pages using Puppeteer
+				for (const contactVariation of contactPageVariations) {
+					const contactPageUrl = url.endsWith("/")
+						? url.slice(0, -1) + contactVariation
+						: url + contactVariation;
+					console.log(contactPageUrl);
+					await page.goto(contactPageUrl, { waitUntil: "domcontentloaded" });
+
+					const contactEmailAddresses = await getEmailAddresses();
+					const uniqueContactEmailAddresses = Array.from(
+						new Set(contactEmailAddresses)
+					);
+
+					if (uniqueContactEmailAddresses.length > 0) {
+						console.log("Contact Returning the first email found");
+						console.log(uniqueContactEmailAddresses);
+						return uniqueContactEmailAddresses; // Return the first email found
+					}
+				}
+			}
+
+			return uniqueEmailAddresses;
+		}
 	} catch (error) {
 		console.error(`Error extracting email from ${url}:`, error.message);
 		return [];
@@ -267,13 +308,7 @@ async function displayMediaAgenciesAndEmails(
 		}
 	}
 	await browser.close();
-	console.log(
-		stars(5),
-		"Number Of Emails Found:",
-		data.length,
-		"Emails",
-		stars(5)
-	);
+	console.log(stars(5), "Number Of Agencies Found:", data.length, stars(5));
 	console.log(stars(10), "Start Exportation to Excel File", stars(10));
 	// Export data to an Excel file
 	await exportToExcel(data, excelFileName);
