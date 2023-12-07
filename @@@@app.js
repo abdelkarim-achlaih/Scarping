@@ -386,6 +386,7 @@ async function displayMediaAgenciesAndEmails(baseUrl, city, country) {
 	}
 
 	await browser.close();
+	// mergeExcelFiles();
 	console.log(stars(10), "Exportation to Excel Files Complete", stars(10));
 }
 
@@ -408,3 +409,58 @@ async function exportToExcel(data, fullPath) {
 	}
 }
 
+// async function mergeExcelFiles() {
+// 	const resultsFolder = path.join(__dirname, "Results", country, city);
+
+// 	// Check if the folder exists
+// 	if (!fs.existsSync(resultsFolder)) {
+// 		console.log(
+// 			`Folder '${city}' in '${country}' not found in 'Results' folder.`
+// 		);
+// 		return;
+// 	}
+
+// 	// Get all files in the city folder
+// 	const files = fs.readdirSync(resultsFolder);
+
+// 	if (files.length === 0) {
+// 		console.log(`No Excel files found in '${city}' in '${country}'.`);
+// 		return;
+// 	}
+
+// 	// Create a new workbook and worksheet
+// 	const mergedWorkbook = new ExcelJS.Workbook();
+// 	const mergedWorksheet = mergedWorkbook.addWorksheet("Merged Data");
+
+// 	// Loop through each file
+// 	for (const file of files) {
+// 		const filePath = path.join(resultsFolder, file);
+
+// 		// Check if it's an Excel file
+// 		if (path.extname(file) === ".xlsx") {
+// 			const workbook = new ExcelJS.Workbook();
+// 			await workbook.xlsx.readFile(filePath);
+
+// 			// Loop through each sheet in the workbook
+// 			workbook.eachSheet((sheet) => {
+// 				// Copy each row from the current sheet to the merged worksheet
+// 				sheet.eachRow((row) => {
+// 					mergedWorksheet.addRow(row.values);
+// 				});
+// 			});
+// 		}
+// 	}
+
+// 	// Save the merged workbook to a new file
+// 	const mergedFilePath = path.join(
+// 		__dirname,
+// 		"Results",
+// 		country,
+// 		`${city}.xlsx`
+// 	);
+// 	await mergedWorkbook.xlsx.writeFile(mergedFilePath);
+
+// 	console.log(
+// 		`Excel files in '${city}' in '${country}' merged into '${city}.xlsx'.`
+// 	);
+// }
