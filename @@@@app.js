@@ -4,11 +4,11 @@ const path = require("path");
 const fs = require("fs");
 
 const baseUrl =
-	"https://www.google.com/localservices/prolist?g2lbs=ANTchaNWgRmZFHM78kmy_p3Q-BYNTuHj_0kt9lZnTzspoHVYbmUbqAW_8aksuMgLlTZLQz-Bu1dmolUrTXJ8Iz_lnhmmQvZjjifiXBMmgp3VpILk7nQOKCY%3D&hl=en-MA&gl=ma&cs=1&ssta=1&q=media%20agencies%20in%20london&oq=media%20agencies%20in%20london&slp=MgA6HENoTUlqX3o3NTRqOWdnTVYtNVJvQ1IyLVZBRzRSAggCYACSAakCCgwvZy8xcTZqY201eTUKDS9nLzExZjhoc3prdG0KCy9nLzF0cDI2azE1CgwvZy8xcHR2dmowY2IKDS9nLzExYnRtOXBfdGwKCy9nLzF0cnBxOGNnCg0vZy8xMXM3Znc3cDNzCg0vZy8xMXRzZDl4OWRiCgsvZy8xdGdfOHpreAoML2cvMWhmMjZkeXFmCg0vZy8xMWNzM3pscnZyCgsvZy8xdGc2azBiZgoLL2cvMXRoazg2bHYKDS9nLzExZ196NDMyYl8KDS9nLzExZmo2eTlxdzYKDS9nLzExYnpfenN0MDMKCy9nLzF0Y3hwNGtnCg0vZy8xMWI4YzNjOXYyCg0vZy8xMWRkeDZmNGptCg0vZy8xMWYxNW44bm1xEgQSAggBEgQKAggBmgEGCgIXGRAA&src=2&serdesk=1&sa=X&ved=2ahUKEwi79_XniP2CAxUNVKQEHXJlBUkQjGp6BAggEAE&scp=ChVnY2lkOm1hcmtldGluZ19hZ2VuY3kSTBISCXXeIa8LoNhHEZkq1d1aOpZSGhIJb-IaoQug2EcRi-m4hONz8S8iCkxvbmRvbiwgVUsqFA05uKAeFcVeyv8d6JLMHiXWnxYAMAAaDm1lZGlhIGFnZW5jaWVzIhhtZWRpYSBhZ2VuY2llcyBpbiBsb25kb24qEE1hcmtldGluZyBhZ2VuY3k%3D"; // Replace with your desired URL
-const city = "London"; // Replace with the desired city
+	"https://www.google.com/localservices/prolist?g2lbs=ANTchaMkeDDIPmb0MV-2tsryOGbLbawRNaR2QujjmwrCN-DC6axPANtqPug9p_MmLv0HSW_KBliuoTO2FUkpNgCfBt9r9mpELU3je8f9-w0rZQ9J7TFvbMo%3D&hl=en-MA&gl=ma&cs=1&ssta=1&q=manchester%20media%20agencies&oq=manchester%20media%20agencies&slp=MgA6HENoTUk4TUcxZ3BYOWdnTVZZSVZvQ1IyT2dndUpSAggCYACSAasCCg0vZy8xMWZnNjBkXzczCg0vZy8xMWowdzlnMjh3CgwvZy8xaGRfdjVyNzkKDS9nLzExaDhqenhzbGgKDS9nLzExY20weDJjdGsKDS9nLzExYzVidDBqanIKDS9nLzExYndfNTZxajAKDS9nLzExZHliZmhyX20KDS9nLzExYzZ5ejl6bngKDS9nLzExZmt3bjcwazAKCy9nLzF0cXQ5Nms2CgwvZy8xcHR4c3lfd3AKDS9nLzExYmNjZDBjMjgKCy9nLzF0ZjNiMXZ5CgsvZy8xdGRxNWs3ZAoNL2cvMTFiNzVkc3o4OQoNL2cvMTFjNnlfenN4MwoLL2cvMXRkMTdkNTgKCy9nLzF0ZmdueXp2CgwvZy8xMmhxbGZsbXISBBICCAESBAoCCAGaAQYKAhcZEAA%3D&src=2&serdesk=1&sa=X&ved=2ahUKEwiHyq-Clf2CAxXrUaQEHSKEBdkQjGp6BAggEAE&scp=ChVnY2lkOm1hcmtldGluZ19hZ2VuY3kSUBISCdv1JlJMTXpIEapr_gQ4FL7ZGhIJoceAoT2ye0gREDRt7Z75DAQiDk1hbmNoZXN0ZXIsIFVLKhQNti3UHxV3CKH-HXdB6h8lgGu4_jAAGg5tZWRpYSBhZ2VuY2llcyIZbWFuY2hlc3RlciBtZWRpYSBhZ2VuY2llcyoQTWFya2V0aW5nIGFnZW5jeQ%3D%3D"; // Replace with your desired URL
+const city = "Manchester"; // Replace with the desired city
 const country = "UK"; // Replace with the desired country
-const deep = 10; // Max Number of Google Local Services Pages Fetched
-const agenciesPerPage = 40; // Max Number of Agencies per excel file
+const deep = 1; // Max Number of Google Local Services Pages Fetched
+const agenciesPerPage = 4; // Max Number of Agencies per excel file
 
 displayMediaAgenciesAndEmails(baseUrl, city, country);
 
@@ -274,24 +274,42 @@ function extractAgencyName(email) {
 
 let websiteUrls;
 
-async function createSubfolder(city) {
+async function createSubfolder() {
 	// Set the path to the "Results" folder
-	const resultsFolder = path.join(__dirname, "Results", city);
+	const resultsFolder = path.join(__dirname, "Results");
 
-	// Create the full path for the subfolder
-	const subfolderPath = path.join(resultsFolder);
+	// Create the full path for the country folder
+	const countryFolderPath = path.join(resultsFolder, country);
+
+	// Check if the country folder already exists
+	if (!fs.existsSync(countryFolderPath)) {
+		// Create the country folder
+		fs.mkdirSync(countryFolderPath, { recursive: true });
+		console.log(`Folder '${country}' created in the 'Results' folder.`);
+	} else {
+		console.log(`Folder '${country}' already exists in the 'Results' folder.`);
+	}
+
+	// Create the full path for the subfolder (city)
+	const subfolderPath = path.join(countryFolderPath, city);
 
 	// Check if the subfolder already exists
 	if (!fs.existsSync(subfolderPath)) {
 		// Create the subfolder
 		fs.mkdirSync(subfolderPath, { recursive: true });
-		console.log(`Subfolder '${city}' created in the 'Results' folder.`);
+		console.log(`Subfolder '${city}' created in the '${country}' folder.`);
 	} else {
-		console.log(`Subfolder '${city}' already exists in the 'Results' folder.`);
+		console.log(
+			`Subfolder '${city}' already exists in the '${country}' folder.`
+		);
 	}
 }
 
 async function displayMediaAgenciesAndEmails(baseUrl, city, country) {
+	// Call the function to create the subfolder
+	await createSubfolder(city);
+
+	// Rest of your existing code...
 	// Extract and display website URLs
 	websiteUrls = await extractWebsiteUrls(baseUrl);
 
@@ -318,7 +336,7 @@ async function displayMediaAgenciesAndEmails(baseUrl, city, country) {
 	const page = await browser.newPage();
 
 	const foundAgencies = [];
-	const exportedFiles = 0;
+	let exportedFiles = 0;
 	for (const url of websiteUrls) {
 		const emails = await extractEmail(url, websiteUrls.indexOf(url), page);
 
@@ -337,13 +355,15 @@ async function displayMediaAgenciesAndEmails(baseUrl, city, country) {
 			if (foundAgencies.length >= agenciesPerPage) {
 				// Export data to an Excel file with a unique name
 				const batchNumber = exportedFiles + 1;
-				const batchExcelFileName = `${city}-${batchNumber}.xlsx`;
-				await exportToExcel(foundAgencies, batchExcelFileName);
-				console.log(
-					stars(5),
-					`Exportation to Excel File ${batchNumber}`,
-					stars(5)
+				exportedFiles++;
+				const excelFilePath = path.join(
+					__dirname,
+					"Results",
+					country,
+					city,
+					`${city}-${batchNumber}.xlsx`
 				);
+				await exportToExcel(foundAgencies, excelFilePath);
 				// Reset the array for the next batch
 				foundAgencies.length = 0;
 			}
@@ -352,9 +372,16 @@ async function displayMediaAgenciesAndEmails(baseUrl, city, country) {
 
 	// Export any remaining agencies to Excel
 	if (foundAgencies.length > 0) {
-		const batchNumber = Math.ceil(foundAgencies.length / agenciesPerPage);
-		const batchExcelFileName = `${city}-${batchNumber}.xlsx`;
-		await exportToExcel(foundAgencies, batchExcelFileName);
+		const batchNumber = exportedFiles + 1;
+		exportedFiles++;
+		const excelFilePath = path.join(
+			__dirname,
+			"Results",
+			country,
+			city,
+			`${city}-${batchNumber}.xlsx`
+		);
+		await exportToExcel(foundAgencies, excelFilePath);
 	}
 
 	await browser.close();
@@ -363,19 +390,13 @@ async function displayMediaAgenciesAndEmails(baseUrl, city, country) {
 
 // Function to export data to an Excel file
 
-async function exportToExcel(data, excelFileName) {
+async function exportToExcel(data, fullPath) {
 	try {
 		const headers = Object.keys(data[0]); // Assuming all objects have the same keys
 
 		const worksheet = xlsx.utils.json_to_sheet(data, { header: headers });
 		const workbook = xlsx.utils.book_new();
 		xlsx.utils.book_append_sheet(workbook, worksheet, "Media Agencies");
-
-		// Specify the subfolder path
-		const subfolderPath = "Results";
-
-		// Join the subfolder path with the original file name
-		const fullPath = path.join(subfolderPath, excelFileName);
 
 		// Write the Excel workbook to the file in the subfolder
 		xlsx.writeFile(workbook, fullPath);
