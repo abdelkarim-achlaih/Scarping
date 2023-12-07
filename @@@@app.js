@@ -3,11 +3,11 @@ const puppeteer = require("puppeteer");
 const path = require("path");
 
 const baseUrl =
-	"https://www.google.com/localservices/prolist?g2lbs=ANTchaMDAMMNJYCa2G72BVpbYV_Zih1NxT8ROoLA6WQaFfuTbAUEkKAOubUGCr4dVW-Hse7CtfwHO7semNLEdBhgGKk3G0WTKquGgpeHotXI3BtRp0G1zE6W6a6OmqtCLNLGlaYHrGth&hl=en-MA&gl=ma&cs=1&ssta=1&q=manchester%20media%20agencies&oq=manchester%20media%20agencies&slp=MgA6HENoTUlndTNENjdQNmdnTVZQRDRHQUIzTVNBemZSAggCYACSAasCCg0vZy8xMWZnNjBkXzczCg0vZy8xMWowdzlnMjh3CgwvZy8xaGRfdjVyNzkKDS9nLzExaDhqenhzbGgKDS9nLzExY20weDJjdGsKDS9nLzExYzVidDBqanIKDS9nLzExYndfNTZxajAKDS9nLzExZHliZmhyX20KDS9nLzExYzZ5ejl6bngKDS9nLzExZmt3bjcwazAKCy9nLzF0cXQ5Nms2CgwvZy8xcHR4c3lfd3AKDS9nLzExYmNjZDBjMjgKCy9nLzF0ZjNiMXZ5CgsvZy8xdGRxNWs3ZAoNL2cvMTFjNnlfenN4MwoLL2cvMXRkMTdkNTgKCy9nLzF0ZmdueXp2CgwvZy8xMmhxbGZsbXIKDS9nLzExYnp4MHhqa2YSBBICCAESBAoCCAGaAQYKAhcZEAA%3D&src=2&serdesk=1&sa=X&ved=2ahUKEwjO-r3rs_qCAxW7UKQEHYSmAjoQjGp6BAgdEAE&scp=ChVnY2lkOm1hcmtldGluZ19hZ2VuY3kSUBISCdv1JlJMTXpIEapr_gQ4FL7ZGhIJoceAoT2ye0gREDRt7Z75DAQiDk1hbmNoZXN0ZXIsIFVLKhQNti3UHxV3CKH-HXdB6h8lgGu4_jAAGg5tZWRpYSBhZ2VuY2llcyIZbWFuY2hlc3RlciBtZWRpYSBhZ2VuY2llcyoQTWFya2V0aW5nIGFnZW5jeQ%3D%3D"; // Replace with your desired URL
-const city = "Manchester"; // Replace with the desired city
+	"https://www.google.com/localservices/prolist?g2lbs=ANTchaM5A7UIxgu6bF7XsRGcSSd9GF2XmhBAhyyFuBuWaVGlujFLFHH2pHp8O14d8nrn1ixl3dYv5e3QAuSeHFqx4kyCYj4ms02OjKya_9NXsgc1OKYiDDV-g8HVPtVPJ4o8TdpvHLIq&hl=en-MA&gl=ma&cs=1&ssta=1&q=london%20media%20agencies&oq=london%20media%20agencies&slp=MgA6HENoTUk3YnVjaE9EOGdnTVZXSVZvQ1IzNmlRczNSAggCYACSAaMCCgwvZy8xcTZqY201eTUKDS9nLzExZjhoc3prdG0KCy9nLzF0cDI2azE1CgwvZy8xcHR2dmowY2IKDS9nLzExYnRtOXBfdGwKDC9nLzFoZjI2ZHlxZgoLL2cvMXRycHE4Y2cKDS9nLzExdHNkOXg5ZGIKDS9nLzExczdmdzdwM3MKCy9nLzF0ZzZrMGJmCgsvZy8xdGdfOHpreAoLL2cvMXY4MzBsamcKCy9nLzF0aGs4Nmx2CgsvZy8xdGRrbHBfYgoNL2cvMTFiel96c3QwMwoLL2cvMXRscXBnYjEKCy9nLzF0Y3hwNGtnCg0vZy8xMWI4YzNjOXYyCg0vZy8xMWI3bHBoc2x6Cg0vZy8xMWZqNnk5cXc2EgQSAggBEgQKAggBmgEGCgIXGRAA&src=2&serdesk=1&sa=X&sqi=2&ved=2ahUKEwiwhpeE4PyCAxU2RaQEHYigCXgQjGp6BAhcEAE&scp=ChVnY2lkOm1hcmtldGluZ19hZ2VuY3kSTBISCXXeIa8LoNhHEZkq1d1aOpZSGhIJb-IaoQug2EcRi-m4hONz8S8iCkxvbmRvbiwgVUsqFA05uKAeFcVeyv8d6JLMHiXWnxYAMAAaDm1lZGlhIGFnZW5jaWVzIhVsb25kb24gbWVkaWEgYWdlbmNpZXMqEE1hcmtldGluZyBhZ2VuY3k%3D"; // Replace with your desired URL
+const city = "London"; // Replace with the desired city
 const country = "UK"; // Replace with the desired country
 const excelFileName = `${city}.xlsx`;
-const deep = 15; // Max Number of Google Local Services Pages Fetched
+const deep = 1; // Max Number of Google Local Services Pages Fetched
 
 displayMediaAgenciesAndEmails(baseUrl, excelFileName, city, country);
 
@@ -138,40 +138,26 @@ async function extractWebsiteUrls(baseUrl) {
 	}
 }
 
-async function extractEmail(url, urlIndex) {
+async function extractEmail(url, urlIndex, page) {
 	const contactPageVariations = [
 		"/contact",
 		"/contact-us",
 		"/contactus",
-		"/get-in-touch",
-		"/about-us/contact",
-		"/about/contact",
-		"/aboutus/contact",
-		"/info/contact",
-		"/support",
-		"/support/contact",
-		"/help",
-		"/help/contact",
-		"/customer-service",
-		"/customer-service/contact",
+		// "/get-in-touch",
+		// "/about-us/contact",
+		// "/about/contact",
+		// "/aboutus/contact",
+		// "/info/contact",
+		// "/support",
+		// "/support/contact",
+		// "/help",
+		// "/help/contact",
+		// "/customer-service",
+		// "/customer-service/contact",
 		/* add more variations as needed */
 	];
 
 	try {
-		const browser = await puppeteer.launch({
-			headless: "new",
-			args: [
-				"--no-sandbox",
-				"--disable-setuid-sandbox",
-				"--disable-dev-shm-usage",
-				"--disable-accelerated-2d-canvas",
-				"--disable-gpu",
-				"--disable-devtools-extension",
-				"--disable-web-security",
-			],
-		});
-		const page = await browser.newPage();
-
 		console.log(
 			stars(2),
 			`Start Extracting Emails From URL N: ${urlIndex} of ${websiteUrls.length}`,
@@ -203,13 +189,11 @@ async function extractEmail(url, urlIndex) {
 				if (uniqueContactEmailAddresses.length > 0) {
 					console.log("Contact Returning the first email found");
 					console.log(uniqueContactEmailAddresses);
-					await browser.close();
 					return uniqueContactEmailAddresses; // Return the first email found
 				}
 			}
 		}
 
-		await browser.close();
 		return uniqueEmailAddresses;
 	} catch (error) {
 		console.error(`Error extracting email from ${url}:`, error.message);
@@ -246,8 +230,21 @@ async function displayMediaAgenciesAndEmails(
 		"Start Extracting Emails + Names: Fetching For Media Agencies Emails + Names",
 		stars(10)
 	);
+	const browser = await puppeteer.launch({
+		headless: "new",
+		args: [
+			"--no-sandbox",
+			"--disable-setuid-sandbox",
+			"--disable-dev-shm-usage",
+			"--disable-accelerated-2d-canvas",
+			"--disable-gpu",
+			"--disable-devtools-extension",
+			"--disable-web-security",
+		],
+	});
+	const page = await browser.newPage();
 	for (const url of websiteUrls) {
-		const emails = await extractEmail(url, websiteUrls.indexOf(url));
+		const emails = await extractEmail(url, websiteUrls.indexOf(url), page);
 		const agencyName = extractAgencyName(url); // Extract agency name from the URL (for demonstration purposes)
 
 		// Push data to the array
@@ -255,6 +252,7 @@ async function displayMediaAgenciesAndEmails(
 			data.push({ agencyName, url, city, country, emails: emails.join(", ") });
 		}
 	}
+	await browser.close();
 	console.log(
 		stars(5),
 		"Number Of Emails Found:",
