@@ -178,7 +178,10 @@ async function extractEmail(url, urlIndex, page) {
 		if (uniqueEmailAddresses.length === 0) {
 			// If no email found, try variations of contact pages using Puppeteer
 			for (const contactVariation of contactPageVariations) {
-				const contactPageUrl = url + contactVariation;
+				const contactPageUrl = url.endsWith("/")
+					? url.slice(0, -1) + contactVariation
+					: url + contactVariation;
+				console.log(contactPageUrl);
 				await page.goto(contactPageUrl, { waitUntil: "domcontentloaded" });
 
 				const contactEmailAddresses = await getEmailAddresses();
@@ -240,6 +243,7 @@ async function displayMediaAgenciesAndEmails(
 			"--disable-gpu",
 			"--disable-devtools-extension",
 			"--disable-web-security",
+			"--blink-settings=imagesEnabled=false",
 		],
 	});
 	const page = await browser.newPage();
