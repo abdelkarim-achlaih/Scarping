@@ -1,6 +1,7 @@
 const xlsx = require("xlsx");
 const puppeteer = require("puppeteer");
 const path = require("path");
+const fs = require("fs");
 
 const baseUrl =
 	"https://www.google.com/localservices/prolist?g2lbs=ANTchaNWgRmZFHM78kmy_p3Q-BYNTuHj_0kt9lZnTzspoHVYbmUbqAW_8aksuMgLlTZLQz-Bu1dmolUrTXJ8Iz_lnhmmQvZjjifiXBMmgp3VpILk7nQOKCY%3D&hl=en-MA&gl=ma&cs=1&ssta=1&q=media%20agencies%20in%20london&oq=media%20agencies%20in%20london&slp=MgA6HENoTUlqX3o3NTRqOWdnTVYtNVJvQ1IyLVZBRzRSAggCYACSAakCCgwvZy8xcTZqY201eTUKDS9nLzExZjhoc3prdG0KCy9nLzF0cDI2azE1CgwvZy8xcHR2dmowY2IKDS9nLzExYnRtOXBfdGwKCy9nLzF0cnBxOGNnCg0vZy8xMXM3Znc3cDNzCg0vZy8xMXRzZDl4OWRiCgsvZy8xdGdfOHpreAoML2cvMWhmMjZkeXFmCg0vZy8xMWNzM3pscnZyCgsvZy8xdGc2azBiZgoLL2cvMXRoazg2bHYKDS9nLzExZ196NDMyYl8KDS9nLzExZmo2eTlxdzYKDS9nLzExYnpfenN0MDMKCy9nLzF0Y3hwNGtnCg0vZy8xMWI4YzNjOXYyCg0vZy8xMWRkeDZmNGptCg0vZy8xMWYxNW44bm1xEgQSAggBEgQKAggBmgEGCgIXGRAA&src=2&serdesk=1&sa=X&ved=2ahUKEwi79_XniP2CAxUNVKQEHXJlBUkQjGp6BAggEAE&scp=ChVnY2lkOm1hcmtldGluZ19hZ2VuY3kSTBISCXXeIa8LoNhHEZkq1d1aOpZSGhIJb-IaoQug2EcRi-m4hONz8S8iCkxvbmRvbiwgVUsqFA05uKAeFcVeyv8d6JLMHiXWnxYAMAAaDm1lZGlhIGFnZW5jaWVzIhhtZWRpYSBhZ2VuY2llcyBpbiBsb25kb24qEE1hcmtldGluZyBhZ2VuY3k%3D"; // Replace with your desired URL
@@ -273,11 +274,24 @@ function extractAgencyName(email) {
 
 let websiteUrls;
 
-async function displayMediaAgenciesAndEmails(
-	baseUrl,
-	city,
-	country
-) {
+async function createSubfolder(city) {
+	// Set the path to the "Results" folder
+	const resultsFolder = path.join(__dirname, "Results", city);
+
+	// Create the full path for the subfolder
+	const subfolderPath = path.join(resultsFolder);
+
+	// Check if the subfolder already exists
+	if (!fs.existsSync(subfolderPath)) {
+		// Create the subfolder
+		fs.mkdirSync(subfolderPath, { recursive: true });
+		console.log(`Subfolder '${city}' created in the 'Results' folder.`);
+	} else {
+		console.log(`Subfolder '${city}' already exists in the 'Results' folder.`);
+	}
+}
+
+async function displayMediaAgenciesAndEmails(baseUrl, city, country) {
 	// Extract and display website URLs
 	websiteUrls = await extractWebsiteUrls(baseUrl);
 
