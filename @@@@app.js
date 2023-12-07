@@ -167,9 +167,19 @@ async function extractEmail(url, urlIndex, page) {
 		await page.goto(url, { waitUntil: "domcontentloaded" });
 
 		const getEmailAddresses = async () => {
-			return await page.$$eval('a[href^="mailto:"]', (links) =>
+			const mailtoLinks = await page.$$eval('a[href^="mailto:"]', (links) =>
 				links.map((link) => link.getAttribute("href").replace("mailto:", ""))
 			);
+
+			if (mailtoLinks.length > 0) {
+				return mailtoLinks;
+			} else {
+				// If no mailto links are found, search for email addresses in the page's inner text
+				const pageText = await page.evaluate(() => document.body.innerText);
+				const emailRegex =
+					/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
+				return pageText.match(emailRegex) || [];
+			}
 		};
 
 		const emailAddresses = await getEmailAddresses();
